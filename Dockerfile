@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libonig-dev \
     libxml2-dev \
-    sqlite3 \
+    libsqlite3-dev \
     && docker-php-ext-install zip mbstring pdo pdo_sqlite
 
 # Copy composer
