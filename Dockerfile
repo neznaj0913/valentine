@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libonig-dev \
     libxml2-dev \
-    && docker-php-ext-install zip mbstring pdo pdo_mysql
+    sqlite3 \
+    && docker-php-ext-install zip mbstring pdo pdo_sqlite
 
 # Copy composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -21,14 +22,19 @@ COPY . .
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set proper permissions
-RUN chmod -R 775 storage bootstrap/cache
+# Ensure SQLite database file exists
+RUN mkdir -p database && \
+    touch database/database.sqlite
 
-# Cache Laravel config and routes
-RUN php artisan config:clear
-RUN php artisan route:clear
-RUN php artisan view:clear
+# Set proper permissions
+RUN chmod -R 775 storage bootstrap/cache database
+
+# Clear caches safely
+RUN php artisan config:clear || true
+RUN php artisan route:clear || true
+RUN php artisan view:clear || true
 
 EXPOSE 10000
 
-CMD php artisan serve --host=0.0.0.0 --port=10000
+# Run migrations automatically, then start server
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
