@@ -29,11 +29,6 @@ RUN mkdir -p database && \
 # Set proper permissions
 RUN chmod -R 775 storage bootstrap/cache database
 
-# Clear caches safely
-RUN php artisan config:clear || true
-RUN php artisan route:clear || true
-RUN php artisan view:clear || true
-
 EXPOSE 10000
 
 # Run migrations automatically, then start server
